@@ -22,7 +22,7 @@ private class TravelRequestTriggerHandlerTest {
 
         Test.stopTest();
 
-        Assert.areEqual(slackTestService.messages.size(), 1);
+        Assert.areEqual(1, slackTestService.messages.size());
 
     }
 
