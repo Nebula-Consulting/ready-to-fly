@@ -2,11 +2,22 @@
     "packageDirectories": [
         {
             "path": "force-app",
-            "default": true
+            "default": true,
+            "package": "Nebula Ready-to-fly",
+            "versionName": "1.0",
+            "versionNumber": "1.0.0.NEXT",
+            "dependencies": [
+                {
+                    "package": "Nebula Core"
+                }
+            ]
         }
     ],
     "name": "ready-to-fly",
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "55.0"
+    "sourceApiVersion": "55.0",
+    "packageAliases": {
+        "Nebula Core": "04t6M000000kmMQQAY"
+    }
 }

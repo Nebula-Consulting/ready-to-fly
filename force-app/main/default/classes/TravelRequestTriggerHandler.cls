@@ -1,4 +1,8 @@
 public with sharing class TravelRequestTriggerHandler {
+
+    @TestVisible
+    private static SlackHandler slackServiceHandler = new SlackService();
+
     public static void afterInsert(List<Travel_Request__c> requests) {
         // Preload related records to preserve bulkification
         Map<Id, String> slackUserIdsBySalesforceUserId = preloadUserMappings(
@@ -18,9 +22,7 @@ public with sharing class TravelRequestTriggerHandler {
             }
         }
 
-        if (messages.size() > 0) {
-            SlackService.postMessages(JSON.serialize(messages));
-        }
+        slackServiceHandler.processMessages(messages);
     }
 
     public static void afterUpdate(
@@ -48,9 +50,7 @@ public with sharing class TravelRequestTriggerHandler {
             }
         }
 
-        if (messages.size() > 0) {
-            SlackService.postMessages(JSON.serialize(messages));
-        }
+        slackServiceHandler.processMessages(messages);
     }
 
     private static Map<Id, String> preloadUserMappings(

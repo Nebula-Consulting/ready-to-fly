@@ -1,5 +1,12 @@
-public class SlackService {
-    @future(callout=true)
+public class SlackService implements SlackHandler {
+
+    public void processMessages(List<SlackMessage> messages) {
+        if (messages.size() > 0) {
+            postMessages(JSON.serialize(messages));
+        }
+    }
+
+    @Future(Callout=true)
     public static void postMessages(String messagesJson) {
         HttpResponse response = sendRequest(messagesJson);
 
@@ -57,4 +64,5 @@ public class SlackService {
 
     public class SlackException extends Exception {
     }
+
 }
