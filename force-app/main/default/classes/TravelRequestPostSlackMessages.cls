@@ -61,8 +61,8 @@ global without sharing class TravelRequestPostSlackMessages implements nebc.Afte
             Travel_Request__c request = (Travel_Request__c) o;
             Id destinationId = request.Status__c == 'New' ? request.Approver__c : request.OwnerId;
 
-
             Slack_Authentication__c authentication = (Slack_Authentication__c) slackAuthenticationIndex.get(destinationId);
+            Slack_Authentication__c ownerAuth = (Slack_Authentication__c) slackAuthenticationIndex.get(request.OwnerId);
             if(authentication == null){
                 return;
             }
@@ -77,7 +77,7 @@ global without sharing class TravelRequestPostSlackMessages implements nebc.Afte
             message.endDate = request.End_Date__c;
             message.cost = request.Cost__c.intValue();
             message.status = request.Status__c;
-            message.ownerName = authentication.User__r.Name;
+            message.ownerName = ownerAuth?.User__r.Name;
             message.userId = authentication.User__c;
             message.instanceUrl = Url.getSalesforceBaseUrl().toExternalForm();
 

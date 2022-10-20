@@ -7,7 +7,7 @@
         "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
         "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
         "postinstall": "lerna exec -- npm install && husky install",
-        "precommit": "lint-staged",
+        "precommit": "",
         "lint": "lerna exec -- npm run lint"
     },
     "devDependencies": {
