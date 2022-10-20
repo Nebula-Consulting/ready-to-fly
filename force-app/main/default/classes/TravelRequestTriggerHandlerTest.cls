@@ -5,19 +5,19 @@
 
 @IsTest
 private class TravelRequestTriggerHandlerTest {
-    private static final nebc.TestRecordSource testRecordSource = new nebc.TestRecordSource();
-    private static final User approver = [SELECT Id FROM User WHERE IsActive = TRUE AND UserType = 'Standard' AND Id != : UserInfo.getUserId() LIMIT 1];
+    private static nebc.TestRecordSource testRecordSource = new nebc.TestRecordSource();
+    private static final User APPROVER = [SELECT Id FROM User WHERE IsActive = TRUE AND UserType = 'Standard' AND Id != : UserInfo.getUserId() LIMIT 1];
 
     @IsTest
     static void onInsert() {
 
         SlackTestService slackTestService = new SlackTestService();
-        TravelRequestTriggerHandler.slackServiceHandler = slackTestService;
+        TravelRequestPostSlackMessages.slackServiceHandler = slackTestService;
 
         Test.startTest();
 
         Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
-                .put(Travel_Request__c.Approver__c, approver.Id)
+                .put(Travel_Request__c.Approver__c, APPROVER.Id)
                 .withInsert();
 
         Test.stopTest();
@@ -30,7 +30,7 @@ private class TravelRequestTriggerHandlerTest {
     static void onStatusUpdate() {
 
         SlackTestService slackTestService = new SlackTestService();
-        TravelRequestTriggerHandler.slackServiceHandler = slackTestService;
+        TravelRequestPostSlackMessages.slackServiceHandler = slackTestService;
 
         Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
                 .withInsert();
@@ -50,7 +50,7 @@ private class TravelRequestTriggerHandlerTest {
     static void onUpdateNoStatusChange() {
 
         SlackTestService slackTestService = new SlackTestService();
-        TravelRequestTriggerHandler.slackServiceHandler = slackTestService;
+        TravelRequestPostSlackMessages.slackServiceHandler = slackTestService;
 
         Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
                 .withInsert();
@@ -71,12 +71,12 @@ private class TravelRequestTriggerHandlerTest {
         delete [SELECT Id FROM Slack_Authentication__c];
 
         SlackTestService slackTestService = new SlackTestService();
-        TravelRequestTriggerHandler.slackServiceHandler = slackTestService;
+        TravelRequestPostSlackMessages.slackServiceHandler = slackTestService;
 
         Test.startTest();
 
         Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
-                .put(Travel_Request__c.Approver__c, approver.Id)
+                .put(Travel_Request__c.Approver__c, APPROVER.Id)
                 .withInsert();
 
         Test.stopTest();
@@ -90,7 +90,7 @@ private class TravelRequestTriggerHandlerTest {
         List<Slack_Authentication__c> slackAuthentications = (List<Slack_Authentication__c>) testRecordSource.getRecord(Slack_Authentication__c.SObjectType)
                 .withoutInsert(2);
 
-        slackAuthentications[1].User__c = approver.Id;
+        slackAuthentications[1].User__c = APPROVER.Id;
         slackAuthentications[1].Slack_User_ID__c = 'USERID2';
 
         insert slackAuthentications;

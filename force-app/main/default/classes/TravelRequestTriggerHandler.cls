@@ -5,17 +5,15 @@ public with sharing class TravelRequestTriggerHandler {
 
     public static void afterInsert(List<Travel_Request__c> requests) {
         // Preload related records to preserve bulkification
-        Map<Id, String> slackUserIdsBySalesforceUserId = preloadUserMappings(
-            requests
-        );
+        Map<Id, String> slackUserIdsBySalesforceUserId = preloadUserMappings(requests);
         Map<Id, User> usersById = preloadOwnerNames(requests);
 
         List<SlackMessage> messages = new List<SlackMessage>();
         for (Travel_Request__c request : requests) {
             SlackMessage message = createMessage(
-                request,
-                slackUserIdsBySalesforceUserId,
-                usersById
+                    request,
+                    slackUserIdsBySalesforceUserId,
+                    usersById
             );
             if (message != null) {
                 messages.add(message);
@@ -25,13 +23,10 @@ public with sharing class TravelRequestTriggerHandler {
         slackServiceHandler.processMessages(messages);
     }
 
-    public static void afterUpdate(
-        List<Travel_Request__c> requests,
-        Map<Id, Travel_Request__c> oldrequestsById
-    ) {
+    public static void afterUpdate(List<Travel_Request__c> requests, Map<Id, Travel_Request__c> oldrequestsById) {
         // Preload related records to preserve bulkification
         Map<Id, String> slackUserIdsBySalesforceUserId = preloadUserMappings(
-            requests
+                requests
         );
         Map<Id, User> usersById = preloadOwnerNames(requests);
 
@@ -40,9 +35,9 @@ public with sharing class TravelRequestTriggerHandler {
             Travel_Request__c oldrequest = oldrequestsById.get(request.Id);
             if (oldrequest.Status__c != request.Status__c) {
                 SlackMessage message = createMessage(
-                    request,
-                    slackUserIdsBySalesforceUserId,
-                    usersById
+                        request,
+                        slackUserIdsBySalesforceUserId,
+                        usersById
                 );
                 if (message != null) {
                     messages.add(message);
@@ -54,7 +49,7 @@ public with sharing class TravelRequestTriggerHandler {
     }
 
     private static Map<Id, String> preloadUserMappings(
-        List<Travel_Request__c> requests
+            List<Travel_Request__c> requests
     ) {
         Set<Id> salesforceUserIds = new Set<Id>();
         List<SlackMessage> messages = new List<SlackMessage>();
@@ -63,24 +58,22 @@ public with sharing class TravelRequestTriggerHandler {
             salesforceUserIds.add(request.Approver__c);
         }
         List<Slack_Authentication__c> userMappings = [
-            SELECT Slack_User_ID__c, User__c
-            FROM Slack_Authentication__c
-            WHERE User__c IN :salesforceUserIds
+                SELECT Slack_User_ID__c, User__c
+                FROM Slack_Authentication__c
+                WHERE User__c IN :salesforceUserIds
         ];
 
         Map<Id, String> slackUserIdsBySalesforceUserId = new Map<Id, String>();
         for (Slack_Authentication__c userMapping : userMappings) {
             slackUserIdsBySalesforceUserId.put(
-                userMapping.User__c,
-                userMapping.Slack_User_ID__c
+                    userMapping.User__c,
+                    userMapping.Slack_User_ID__c
             );
         }
         return slackUserIdsBySalesforceUserId;
     }
 
-    private static Map<Id, User> preloadOwnerNames(
-        List<Travel_Request__c> requests
-    ) {
+    private static Map<Id, User> preloadOwnerNames(List<Travel_Request__c> requests) {
         Set<Id> ownerIds = new Set<Id>();
         List<SlackMessage> messages = new List<SlackMessage>();
         for (Travel_Request__c request : requests) {
@@ -91,11 +84,7 @@ public with sharing class TravelRequestTriggerHandler {
         return new Map<Id, User>(users);
     }
 
-    private static SlackMessage createMessage(
-        Travel_Request__c request,
-        Map<Id, String> slackUserIdsBySalesforceUserId,
-        Map<Id, User> usersById
-    ) {
+    private static SlackMessage createMessage(Travel_Request__c request, Map<Id, String> slackUserIdsBySalesforceUserId, Map<Id, User> usersById) {
         Id destinationUserId;
         if (request.Status__c == 'New') {
             destinationUserId = request.Approver__c;
@@ -105,7 +94,7 @@ public with sharing class TravelRequestTriggerHandler {
 
         SlackMessage message;
         String slackUserId = slackUserIdsBySalesforceUserId.get(
-            destinationUserId
+                destinationUserId
         );
         if (slackUserId != null) {
             // Just post message if user authenticated from slack
@@ -125,4 +114,5 @@ public with sharing class TravelRequestTriggerHandler {
         }
         return message;
     }
+
 }
