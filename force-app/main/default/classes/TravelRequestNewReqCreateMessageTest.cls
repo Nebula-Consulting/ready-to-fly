@@ -1,43 +1,50 @@
 /**
- * @author danb@nebulaconsulting.co.uk
- * @date 19/10/2022
+ * @author jasonf@nebulaconsulting.co.uk
+ * @date 20/10/2022
  */
 
 @IsTest
-private class TravelRequestTriggerHandlerTest {
-    private static final nebc.TestRecordSource testRecordSource = new nebc.TestRecordSource();
+private class TravelRequestNewReqCreateMessageTest {
+    private static nebc.TestRecordSource testRecordSource = new nebc.TestRecordSource();
     private static final User approver = [SELECT Id FROM User WHERE IsActive = TRUE AND UserType = 'Standard' AND Id != :UserInfo.getUserId() LIMIT 1];
 
     @IsTest
-    static void onStatusUpdate() {
+    static void onInsert() {
         SlackTestService slackTestService = new SlackTestService();
-        TravelRequestStatusUpdate.slackServiceHandler = slackTestService;
-
-        Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
-                .withInsert();
+        TravelRequestNewReqCreateMessage.slackServiceHandler = slackTestService;
 
         Test.startTest();
-        travelRequest.Status__c = 'Approved';
-        update travelRequest;
+        Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
+                .put(Travel_Request__c.Approver__c, approver.Id)
+                .withInsert();
+
         Test.stopTest();
 
         Assert.areEqual(slackTestService.messages.size(), 1);
-
     }
 
     @IsTest
-    static void onUpdateNoStatusChange() {
-        SlackTestService slackTestService = new SlackTestService();
-        TravelRequestStatusUpdate.slackServiceHandler = slackTestService;
+    static void onInsertNoAuthentication() {
+        delete [SELECT Id FROM Slack_Authentication__c];
 
-        Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
-                .withInsert();
+        SlackTestService slackTestService = new SlackTestService();
+        TravelRequestNewReqCreateMessage.slackServiceHandler = slackTestService;
 
         Test.startTest();
-        update travelRequest;
+        Travel_Request__c travelRequest = (Travel_Request__c) testRecordSource.getRecord(Travel_Request__c.SObjectType)
+                .put(Travel_Request__c.Approver__c, approver.Id)
+                .withInsert();
         Test.stopTest();
 
         Assert.areEqual(slackTestService.messages.size(), 0);
+    }
+
+    public class SlackTestService implements SlackHandler {
+        private List<SlackMessage> messages;
+
+        public void processMessages(List<SlackMessage> messages) {
+            this.messages = messages;
+        }
     }
 
     @TestSetup
@@ -49,17 +56,5 @@ private class TravelRequestTriggerHandlerTest {
         slackAuthentications[1].Slack_User_ID__c = 'USERID2';
 
         insert slackAuthentications;
-
     }
-
-    public class SlackTestService implements SlackHandler {
-
-        private List<SlackMessage> messages;
-
-        public void processMessages(List<SlackMessage> messages) {
-            this.messages = messages;
-        }
-
-    }
-
 }
